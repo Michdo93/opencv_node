@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>raspicam_node_saver</name>
+  <name>opencv_node</name>
   <version>0.0.0</version>
-  <description>The raspicam_node_saver package</description>
+  <description>The opencv_node package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
@@ -19,7 +19,7 @@
   <!-- Url tags are optional, but multiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/raspicam_node_saver</url> -->
+  <!-- <url type="website">http://wiki.ros.org/opencv_node</url> -->
 
 
   <!-- Author tags are optional, multiple are allowed, one per tag -->

@@ -2,16 +2,10 @@
 import os
 import sys
 import time
-import re
-import socket
 import rospy
 import roslib
-from sensor_msgs.msg import CompressedImage
+from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
-
-# numpy and scipy
-import numpy as np
-from scipy.ndimage import filters
 
 # OpenCV
 import cv2
@@ -19,23 +13,21 @@ import cv2
 VERBOSE = False
 
 
-class FrameSaver(object):
+class CV2Imwrite(object):
 
-    def __init__(self, robot_host):
+    def __init__(self):
         """Configure subscriber."""
         # Create a subscriber with appropriate topic, custom message and name of
         # callback function.
-        self.robot_host = robot_host
-        self.sub = rospy.Subscriber(self.robot_host + '/raspicam/image/compressed', CompressedImage, self.callback, queue_size = 1)
+        self.sub = rospy.Subscriber('opencv/image/get', Image, self.callback, queue_size = 10)
 
         self.br = CvBridge()
         self.image = None
         self.data = None
 
         self.i = 0
-        self.name = "raspicam_node_%s_%s.avi" % (self.rospy.Time.now(), self.i)
+        self.name = "opencv_%s_%s.jpeg" % (rospy.Time.now(), self.i)
 
-        # Initialize message variables.
         self.enable = False
 
         if self.enable:
@@ -45,41 +37,32 @@ class FrameSaver(object):
 
     def start(self):
         self.enable = True
-        self.sub = rospy.Subscriber(self.robot_host + '/raspicam/image/compressed', CompressedImage, self.callback, queue_size = 1)
+        self.sub = rospy.Subscriber('opencv/image/get', Image, self.callback, queue_size = 10)
 
     def stop(self):
         """Turn off subscriber."""
         self.enable = False
         self.sub.unregister()
-        self.infoData.unregister()
-        cv2.destroyAllWindows()
 
     def callback(self, data):
         """Handle subscriber data."""
         # Simply print out values in our custom message.
         self.data = data
 
-        #### direct conversion to CV2 ####
-        np_arr = np.fromstring(self.data.data, np.uint8)
-        image_np = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-
-        #try:
-        #    img = self.br.compressed_imgmsg_to_cv2(data, 'bgr8')
-        #except CvBridgeError as e:
-        #    print(e)
+        try:
+            self.image = self.br.imgmsg_to_cv2(self.data, 'bgr8')
+        except CvBridgeError as e:
+            print(e)
         
-        cv2.imshow('cv_img', image_np)
-        cv2.waitKey(25)
-
         self.i = self.i + 1
-        cv2.imwrite(self.name, image_np)
+        cv2.imwrite(self.name, self.image)
         
 if __name__ == '__main__':
     # Initialize the node and name it.
-    node_name = re.sub("-", "_", socket.gethostname()) + "_Raspicam_FrameSaver"
+    node_name = "CV2Imwrite"
     rospy.init_node(node_name, anonymous=False)
     
-    image = FrameSaver("robotcar")
+    image = CV2Imwrite()
     
     # Go to the main loop
     try:
